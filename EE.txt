@@ -1,0 +1,116 @@
+create table author(
+author_id varchar2(20) primary key, 
+a_name varchar2(20),
+a_city varchar2(20),
+a_country varchar2(20)
+);
+
+create table publisher(
+publisher_id varchar2(20) primary key,
+p_name varchar2(20),
+p_city varchar2(20),
+p_country varchar2(20)
+);
+
+create table category(
+category_id varchar2(20) primary key,
+descripition varchar2(20)
+);
+
+create table catalog1 (
+book_id varchar2(20) primary key,
+tittle varchar2(50),
+author_id varchar2(20),
+publisher_id varchar2(20),
+category_id varchar2(20),
+year int,
+price int,
+foreign key (author_id) references author (author_id),
+foreign key (category_id) references category (category_id)
+);
+
+create table order_details (
+order_no varchar2(20) primary key,
+book_id varchar2(20),
+quantatiy number(10),
+foreign key (book_id) references catalog1 (book_id)
+);
+
+insert into author values ('a1','shaneef','bhatkal','india');
+insert into author values ('a2','nashil','moraco','africa');
+insert into author values ('a3','jafar','udupi','india');
+insert into author values ('a4','kaif','shirali','india');
+insert into author values ('a5','raif','goa','india');
+
+insert into publisher values ('p1','mohammed','banglore','india');
+insert into publisher values ('p2','mohan','usman nagar','pakisatan');
+insert into publisher values ('p3','zaheer','gulmi','india');
+insert into publisher values ('p4','umar','bhatkal','india');
+insert into publisher values ('p5','raid','goa','india');
+
+insert into category values ('c1','kids');
+insert into category values ('c2','horror');
+insert into category values ('c3','romantic');
+insert into category values ('c4','story');
+insert into category values ('c5','action');
+
+insert into catalog1 values ('b1','The Magic Tree','a1','p1','c1',2022,101);
+insert into catalog1 values ('b2','A Day with the Moon','a1','p2','c3',2002,102);
+insert into catalog1 values ('b3','The Lost Puppy','a2','p5','c2',2023,103);
+insert into catalog1 values ('b4','The Secret Garden','a4','p2','c5',2002,104);
+insert into catalog1 values ('b5','Toms Big Adventure','a4','p3','c3',2020,105);
+
+insert into order_details values ('1','b1',110);
+insert into order_details values ('2','b2',34);
+insert into order_details values ('3','b3',1200);
+insert into order_details values ('4','b4',234);
+insert into order_details values ('5','b5',300);
+
+
+
+SELECT * 
+FROM author a
+WHERE a.author_id IN (
+    SELECT catalog1.author_id
+    FROM catalog1
+    WHERE catalog1.year > 2000
+    AND catalog1.price > (
+        SELECT AVG(price) 
+        FROM catalog1
+    )
+    GROUP BY catalog1.author_id
+    HAVING COUNT(catalog1.author_id) >= 2
+);
+
+
+
+SELECT author_id
+    FROM catalog1, order_details
+    WHERE order_details.book_id = catalog1.book_id
+      AND order_details.quantatiy = (
+          SELECT MAX(quantatiy)
+          FROM order_details
+      );
+
+update catalog1
+set price=price+(price*0.10)
+where publisher_id in  
+(select publisher.publisher_id from publisher
+where publisher.p_name='zaheer');
+
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+create or replace function add_number(num1 in number,num2 in number)
+return number
+is  
+begin
+    return num1+num2;
+end add_number;
+/
+
+declare
+  result number;
+begin
+    result:=add_number(10,20);
+    dbms_output.put_line('total='||result);
+end;
+/
